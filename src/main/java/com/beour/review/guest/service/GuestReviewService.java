@@ -4,15 +4,16 @@ import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.review.domain.entity.Review;
-import com.beour.review.domain.entity.ReviewComment;
 import com.beour.review.domain.entity.ReviewImage;
 import com.beour.review.domain.repository.ReviewImageRepository;
 import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.review.guest.dto.ReviewCreateRequestDto;
+import com.beour.review.guest.dto.ReviewUpdateRequestDto;
 import com.beour.review.guest.dto.ReviewableSpaceDto;
 import com.beour.review.guest.dto.WrittenReviewDto;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -108,4 +109,36 @@ public class GuestReviewService {
         spaceRepository.save(space);
     }
 
+    @Transactional
+    public void updateReview(Long guestId, Long reviewId, ReviewUpdateRequestDto request) {
+        Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다."));
+
+/*        if (!review.getGuest().getId().equals(guestId)) {
+            throw new AccessDeniedException("리뷰를 수정할 권한이 없습니다.");
+        }*/
+
+        reviewImageRepository.deleteByReviewId(reviewId); // 기존 이미지 삭제
+        List<ReviewImage> newImages = request.getImageUrls().stream()
+                .map(url -> ReviewImage.builder()
+                        .review(review)
+                        .imageUrl(url)
+                        .build())
+                .toList();
+        reviewImageRepository.saveAll(newImages);
+
+        review.updateRating(request.getRating());
+        review.updateContent(request.getContent());
+
+        updateAverageRating(review.getSpace());
+    }
+
+    private void updateAverageRating(Space space) {
+        List<Review> reviews = reviewRepository.findBySpaceIdAndDeletedAtIsNull(space.getId());
+        double average = reviews.stream()
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
+        space.updateAvgRating(average);
+    }
 }

@@ -1,6 +1,7 @@
 package com.beour.review.guest.controller;
 
 import com.beour.review.guest.dto.ReviewCreateRequestDto;
+import com.beour.review.guest.dto.ReviewUpdateRequestDto;
 import com.beour.review.guest.dto.ReviewableSpaceDto;
 import com.beour.review.guest.dto.WrittenReviewDto;
 import com.beour.review.guest.service.GuestReviewService;
@@ -35,6 +36,14 @@ public class GuestReviewController {
             @RequestBody ReviewCreateRequestDto request) {
 
         guestReviewService.createReview(guestId, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{reviewId}")
+    public ResponseEntity<Void> updateReview(@PathVariable Long reviewId,
+                                             @RequestBody ReviewUpdateRequestDto request,
+                                             @RequestHeader("guestId") Long guestId) {
+        guestReviewService.updateReview(guestId, reviewId, request);
         return ResponseEntity.ok().build();
     }
 }
