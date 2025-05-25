@@ -37,4 +37,11 @@ public class GuestReviewController {
         guestReviewService.createReview(guestId, request);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/{reviewId}")
+    public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId,
+                                             @RequestHeader("guestId") Long guestId) {
+        guestReviewService.deleteReview(guestId, reviewId);
+        return ResponseEntity.noContent().build();
+    }
 }

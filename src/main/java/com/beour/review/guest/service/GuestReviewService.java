@@ -4,7 +4,6 @@ import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.repository.ReservationRepository;
 import com.beour.review.domain.entity.Review;
-import com.beour.review.domain.entity.ReviewComment;
 import com.beour.review.domain.entity.ReviewImage;
 import com.beour.review.domain.repository.ReviewImageRepository;
 import com.beour.review.domain.repository.ReviewRepository;
@@ -13,6 +12,7 @@ import com.beour.review.guest.dto.ReviewableSpaceDto;
 import com.beour.review.guest.dto.WrittenReviewDto;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -108,4 +108,27 @@ public class GuestReviewService {
         spaceRepository.save(space);
     }
 
+    @Transactional
+    public void deleteReview(Long guestId, Long reviewId) {
+        Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다."));
+
+/*        if (!review.getGuest().getId().equals(guestId)) {
+            throw new AccessDeniedException("리뷰를 삭제할 권한이 없습니다.");
+        }*/
+
+        review.delete();
+        reviewImageRepository.deleteByReviewId(reviewId);
+
+        updateAverageRating(review.getSpace());
+    }
+
+    private void updateAverageRating(Space space) {
+        List<Review> reviews = reviewRepository.findBySpaceIdAndDeletedAtIsNull(space.getId());
+        double average = reviews.stream()
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
+        space.updateAvgRating(average);
+    }
 }

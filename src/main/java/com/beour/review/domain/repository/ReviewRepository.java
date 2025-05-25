@@ -12,8 +12,10 @@ import java.util.Optional;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     boolean existsByReservationId(Long reservationId);
     List<Review> findByGuestIdAndDeletedAtIsNull(Long guestId);
-    Optional<Review> findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(Long guestId, Long spaceId, LocalDate reservedDate);
 
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.space.id = :spaceId AND r.deletedAt IS NULL")
     Double findAverageRatingBySpaceId(@Param("spaceId") Long spaceId);
+
+    Optional<Review> findByIdAndDeletedAtIsNull(Long id);
+    List<Review> findBySpaceIdAndDeletedAtIsNull(Long spaceId);
 }
