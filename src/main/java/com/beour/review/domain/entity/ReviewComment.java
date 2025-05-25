@@ -18,15 +18,15 @@ public class ReviewComment extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "review_id", nullable = false)
+    @OneToOne
+    @JoinColumn(name = "review_id")
     private Review review;
 
-    @Column(length = 500)
+    @ManyToOne
+    @JoinColumn(name = "host_id")
+    private User host;
+
+    @Column(length = 1000)
     private String content;
 
     private LocalDate deletedAt;
@@ -38,5 +38,4 @@ public class ReviewComment extends BaseTimeEntity {
     public void delete() {
         this.deletedAt = LocalDate.now();
     }
-
 }

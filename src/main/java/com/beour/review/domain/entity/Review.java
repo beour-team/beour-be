@@ -29,21 +29,17 @@ public class Review extends BaseTimeEntity {
     @JoinColumn(name = "space_id", nullable = false)
     private Space space;
 
-    private int rating; // 별점 (1~5)
+    private int rating;
 
     @Column(length = 1000)
     private String content;
 
     private LocalDate reservedDate;
 
-    // 연관 댓글
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewComment> comments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewImage> images = new ArrayList<>();
-
     private LocalDate deletedAt;
+
+    @OneToOne(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ReviewComment hostComment;
 
     public void updateContent(String content) {
         this.content = content;
@@ -57,3 +53,4 @@ public class Review extends BaseTimeEntity {
         this.deletedAt = LocalDate.now();
     }
 }
+
