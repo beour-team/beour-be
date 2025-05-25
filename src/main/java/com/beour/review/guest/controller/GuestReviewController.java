@@ -1,14 +1,12 @@
 package com.beour.review.guest.controller;
 
+import com.beour.review.guest.dto.ReviewCreateRequestDto;
 import com.beour.review.guest.dto.ReviewableSpaceDto;
 import com.beour.review.guest.dto.WrittenReviewDto;
 import com.beour.review.guest.service.GuestReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,5 +27,14 @@ public class GuestReviewController {
     public ResponseEntity<List<WrittenReviewDto>> getMyReviews(@RequestParam Long guestId) {
         List<WrittenReviewDto> reviews = guestReviewService.getWrittenReviews(guestId);
         return ResponseEntity.ok(reviews);
+    }
+
+    @PostMapping
+    public ResponseEntity<Void> createReview(
+            @RequestHeader("X-USER-ID") Long guestId, // 또는 SecurityContext 사용
+            @RequestBody ReviewCreateRequestDto request) {
+
+        guestReviewService.createReview(guestId, request);
+        return ResponseEntity.ok().build();
     }
 }

@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class WrittenReviewDto {
-
     private String spaceName;
     private String thumbnailUrl;
     private int rating;

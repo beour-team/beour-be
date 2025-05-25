@@ -1,13 +1,21 @@
 package com.beour.review.guest.service;
 
+import com.beour.reservation.commons.entity.Reservation;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.reservation.commons.repository.ReservationRepository;
+import com.beour.review.domain.entity.Review;
 import com.beour.review.domain.entity.ReviewComment;
+import com.beour.review.domain.entity.ReviewImage;
+import com.beour.review.domain.repository.ReviewImageRepository;
 import com.beour.review.domain.repository.ReviewRepository;
+import com.beour.review.guest.dto.ReviewCreateRequestDto;
 import com.beour.review.guest.dto.ReviewableSpaceDto;
 import com.beour.review.guest.dto.WrittenReviewDto;
+import com.beour.space.domain.entity.Space;
+import com.beour.space.domain.repository.SpaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,6 +25,8 @@ public class GuestReviewService {
 
     private final ReservationRepository reservationRepository;
     private final ReviewRepository reviewRepository;
+    private final ReviewImageRepository reviewImageRepository;
+    private final SpaceRepository spaceRepository;
 
     public List<ReviewableSpaceDto> getReviewableSpaces(Long guestId) {
         return reservationRepository.findByUserIdAndStatusAndDeletedAtIsNull(guestId, ReservationStatus.COMPLETED)
@@ -52,6 +62,50 @@ public class GuestReviewService {
                                         .build() : null)
                         .build())
                 .toList();
+    }
+
+    @Transactional
+    public void createReview(Long guestId, ReviewCreateRequestDto request) {
+        Reservation reservation = reservationRepository.findById(request.getReservationId())
+                .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
+
+/*        if (!reservation.getGuest().getId().equals(guestId)) {
+            throw new IllegalArgumentException("해당 예약에 대한 작성 권한이 없습니다.");
+        }*/
+
+        if (reviewRepository.existsByReservationId(reservation.getId())) {
+            throw new IllegalStateException("이미 리뷰가 작성된 예약입니다.");
+        }
+
+        Space space = reservation.getSpace();
+
+        Review review = Review.builder()
+                .space(space)
+                .guest(reservation.getGuest())
+                .rating(request.getRating())
+                .content(request.getContent())
+                .reservedDate(reservation.getDate())
+                .build();
+
+        reviewRepository.save(review);
+
+        if (request.getImageUrls() != null) {
+            request.getImageUrls().forEach(url -> {
+                ReviewImage image = ReviewImage.builder()
+                        .review(review)
+                        .imageUrl(url)
+                        .build();
+                reviewImageRepository.save(image);
+            });
+        }
+
+        updateAvgRating(space);
+    }
+
+    private void updateAvgRating(Space space) {
+        Double avgRating = reviewRepository.findAverageRatingBySpaceId(space.getId());
+        space.updateAvgRating(avgRating); // setter or custom 메서드로 업데이트
+        spaceRepository.save(space);
     }
 
 }
