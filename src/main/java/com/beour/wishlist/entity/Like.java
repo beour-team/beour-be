@@ -1,5 +1,6 @@
 package com.beour.wishlist.entity;
 
+import com.beour.global.entity.BaseTimeEntity;
 import com.beour.space.domain.entity.Space;
 import com.beour.user.entity.User;
 import jakarta.persistence.*;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Table(name = "likes", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "space_id"}))
-public class Like {
+public class Like extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

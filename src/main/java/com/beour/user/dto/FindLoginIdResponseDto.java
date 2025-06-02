@@ -10,5 +10,5 @@ import lombok.Setter;
 public class FindLoginIdResponseDto {
 
   private String loginId;
-  private String message;
+
 }

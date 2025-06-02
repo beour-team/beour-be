@@ -8,13 +8,16 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class SignupDto {
+public class SignupRequestDto {
 
     @NotBlank(message = "이름은 필수입니다.")
     private String name;
 
     @NotBlank(message = "닉네임은 필수입니다.")
     private String nickname;
+
+    @NotBlank(message = "역할은 필수입니다.")
+    private String role;
 
     @NotBlank(message = "이메일은 필수입니다.")
     @Email(message = "올바른 이메일 형식이어야 합니다.")

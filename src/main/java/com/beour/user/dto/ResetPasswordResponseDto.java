@@ -10,6 +10,5 @@ import lombok.Setter;
 public class ResetPasswordResponseDto {
 
   private String tempPassword;
-  private String message;
 
 }

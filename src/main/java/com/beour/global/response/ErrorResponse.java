@@ -5,11 +5,13 @@ import lombok.Getter;
 @Getter
 public class ErrorResponse {
 
-  private final String code;
+  private final int code;
+  private final String codeName;
   private final String message;
 
-  public ErrorResponse(String code, String message) {
+  public ErrorResponse(int code, String codeName, String message) {
     this.code = code;
+    this.codeName = codeName;
     this.message = message;
   }
 }

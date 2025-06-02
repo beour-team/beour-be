@@ -1,5 +1,6 @@
 package com.beour.reservation.commons.entity;
 
+import com.beour.global.entity.BaseTimeEntity;
 import com.beour.reservation.commons.enums.ReservationStatus;
 import com.beour.space.domain.entity.Space;
 import com.beour.user.entity.User;
@@ -22,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class Reservation {
+public class Reservation extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,6 +48,11 @@ public class Reservation {
     private LocalTime endTime;
     private int price;
     private int guestCount;
+
+    public void cancel(){
+        this.status = ReservationStatus.REJECTED;
+        this.softDelete();
+    }
 
     @Builder
     private Reservation(User guest, User host, Space space, ReservationStatus status, LocalDate date, LocalTime startTime, LocalTime endTime, int price, int guestCount){

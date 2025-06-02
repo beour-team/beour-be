@@ -2,7 +2,7 @@ package com.beour.global.exception;
 
 import com.beour.global.exception.exceptionType.DuplicateUserInfoException;
 import com.beour.global.exception.exceptionType.InvalidCredentialsException;
-import com.beour.global.exception.exceptionType.UserException;
+import com.beour.global.exception.exceptionType.InvalidFormatException;
 import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.global.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -18,20 +18,25 @@ public class UserExceptionHandler {
   @ExceptionHandler(InvalidCredentialsException.class)
   public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(new ErrorResponse("INVALID_CREDENTIALS", ex.getMessage()));
+        .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "INVALID_CREDENTIALS", ex.getMessage()));
   }
 
   @ExceptionHandler(UserNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(new ErrorResponse("USER_NOT_FOUND", ex.getMessage()));
+        .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "USER_NOT_FOUND", ex.getMessage()));
   }
 
   @ExceptionHandler(DuplicateUserInfoException.class)
   public ResponseEntity<ErrorResponse> handleDuplicateUserInfo(DuplicateUserInfoException ex) {
-    log.error("중복 예외 발생: {}", ex.getMessage()); // 로그 찍기
     return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(new ErrorResponse("DUPLICATE_USER_INFO", ex.getMessage()));
+        .body(new ErrorResponse(HttpStatus.CONFLICT.value(), "DUPLICATE_USER_INFO", ex.getMessage()));
+  }
+
+  @ExceptionHandler(InvalidFormatException.class)
+  public ResponseEntity<ErrorResponse> invalidFormat(InvalidFormatException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR", ex.getMessage()));
   }
 
 }
