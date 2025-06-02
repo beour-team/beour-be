@@ -113,9 +113,9 @@ public class GuestReviewService {
         Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다."));
 
-/*        if (!review.getGuest().getId().equals(guestId)) {
+        if (review.getGuest().getId() != guestId) {
             throw new AccessDeniedException("리뷰를 삭제할 권한이 없습니다.");
-        }*/
+        }
 
         review.delete();
         reviewImageRepository.deleteByReviewId(reviewId);
