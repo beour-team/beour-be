@@ -12,7 +12,7 @@ public class WrittenReviewDto {
     private String nickname;
     private String reviewDate;
     private String reservedDate;
-    private String comment;
+    private String guestContent;
 
     private HostCommentDto hostComment;
 
@@ -20,7 +20,7 @@ public class WrittenReviewDto {
     @Builder
     public static class HostCommentDto {
         private String nickname;
-        private String content;
+        private String hostContent;
         private String createdAt;
     }
 }

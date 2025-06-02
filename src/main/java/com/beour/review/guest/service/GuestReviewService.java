@@ -15,6 +15,7 @@ import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,12 +54,11 @@ public class GuestReviewService {
                         .rating(review.getRating())
                         .nickname(review.getGuest().getNickname())
                         .reviewDate(review.getCreatedAt().toLocalDate().toString())
-                        .reservedDate(review.getReservedDate().toString())
-                        .comment(review.getContent())
+                        .guestContent(review.getContent())
                         .hostComment(review.getHostComment() != null ?
                                 WrittenReviewDto.HostCommentDto.builder()
                                         .nickname(review.getHostComment().getHost().getNickname())
-                                        .content(review.getHostComment().getContent())
+                                        .hostContent(review.getHostComment().getContent())
                                         .createdAt(review.getHostComment().getCreatedAt().toLocalDate().toString())
                                         .build() : null)
                         .build())
@@ -70,9 +70,9 @@ public class GuestReviewService {
         Reservation reservation = reservationRepository.findById(request.getReservationId())
                 .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
 
-/*        if (!reservation.getGuest().getId().equals(guestId)) {
+        if (reservation.getGuest().getId() != guestId) {
             throw new IllegalArgumentException("해당 예약에 대한 작성 권한이 없습니다.");
-        }*/
+        }
 
         if (reviewRepository.existsByReservationId(reservation.getId())) {
             throw new IllegalStateException("이미 리뷰가 작성된 예약입니다.");
@@ -81,11 +81,11 @@ public class GuestReviewService {
         Space space = reservation.getSpace();
 
         Review review = Review.builder()
+                .reservation(reservation)
                 .space(space)
                 .guest(reservation.getGuest())
                 .rating(request.getRating())
                 .content(request.getContent())
-                .reservedDate(reservation.getDate())
                 .build();
 
         reviewRepository.save(review);
@@ -100,12 +100,12 @@ public class GuestReviewService {
             });
         }
 
-        updateAvgRating(space);
+        updateAvgRatingFromDb(space);
     }
 
-    private void updateAvgRating(Space space) {
+    private void updateAvgRatingFromDb(Space space) {
         Double avgRating = reviewRepository.findAverageRatingBySpaceId(space.getId());
-        space.updateAvgRating(avgRating); // setter or custom 메서드로 업데이트
+        space.updateAvgRating(avgRating);
         spaceRepository.save(space);
     }
 
@@ -114,26 +114,29 @@ public class GuestReviewService {
         Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다."));
 
-/*        if (!review.getGuest().getId().equals(guestId)) {
+        if (review.getGuest().getId() != guestId) {
             throw new AccessDeniedException("리뷰를 수정할 권한이 없습니다.");
-        }*/
+        }
 
         reviewImageRepository.deleteByReviewId(reviewId); // 기존 이미지 삭제
-        List<ReviewImage> newImages = request.getImageUrls().stream()
-                .map(url -> ReviewImage.builder()
-                        .review(review)
-                        .imageUrl(url)
-                        .build())
-                .toList();
-        reviewImageRepository.saveAll(newImages);
+
+        if (request.getImageUrls() != null) {
+            List<ReviewImage> newImages = request.getImageUrls().stream()
+                    .map(url -> ReviewImage.builder()
+                            .review(review)
+                            .imageUrl(url)
+                            .build())
+                    .toList();
+            reviewImageRepository.saveAll(newImages);
+        }
 
         review.updateRating(request.getRating());
         review.updateContent(request.getContent());
 
-        updateAverageRating(review.getSpace());
+        recalculateAvgRatingFromReviews(review.getSpace());
     }
 
-    private void updateAverageRating(Space space) {
+    private void recalculateAvgRatingFromReviews(Space space) {
         List<Review> reviews = reviewRepository.findBySpaceIdAndDeletedAtIsNull(space.getId());
         double average = reviews.stream()
                 .mapToInt(Review::getRating)

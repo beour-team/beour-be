@@ -1,56 +1,57 @@
 package com.beour.review.domain.entity;
 
 import com.beour.global.entity.BaseTimeEntity;
+import com.beour.reservation.commons.entity.Reservation;
 import com.beour.space.domain.entity.Space;
 import com.beour.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@SQLDelete(sql = "UPDATE review SET deleted_at = NOW() WHERE id = ?")
+@Where(clause = "deleted_at IS NULL")
 public class Review extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "guest_id", nullable = false)
-    private User guest;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Reservation reservation;
 
-    @ManyToOne
-    @JoinColumn(name = "space_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Space space;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User guest;
 
     private int rating;
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String content;
 
-    private LocalDate reservedDate;
+    private LocalDateTime deletedAt;
 
-    private LocalDate deletedAt;
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
+    private List<ReviewImage> reviewImages;
 
-    @OneToOne(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "review", cascade = CascadeType.ALL)
     private ReviewComment hostComment;
-
-    public void updateContent(String content) {
-        this.content = content;
-    }
 
     public void updateRating(int rating) {
         this.rating = rating;
     }
 
-    public void delete() {
-        this.deletedAt = LocalDate.now();
+    public void updateContent(String content) {
+        this.content = content;
     }
 }
-
