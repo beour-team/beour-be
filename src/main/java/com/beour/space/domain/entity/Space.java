@@ -118,5 +118,8 @@ public class Space extends BaseTimeEntity {
     public void delete() {
         this.deletedAt = LocalDateTime.now();
     }
-  
+
+    public void updateAvgRating(Double avgRating) {
+        this.avgRating = avgRating;
+    }
 }
