@@ -41,8 +41,8 @@ public class ReservationGuestController {
     }
 
     @GetMapping("/api/reservation/past")
-    public ApiResponse<List<ReservationListResponseDto>> checkPastReservationList(@RequestParam(value = "guestId") Long guestId){
-        return ApiResponse.ok(reservationGuestService.findPastReservationList(guestId));
+    public ApiResponse<List<ReservationListResponseDto>> checkPastReservationList(){
+        return ApiResponse.ok(reservationGuestService.findPastReservationList());
     }
 
     @DeleteMapping("/api/reservation/cancel")

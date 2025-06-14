@@ -11,6 +11,8 @@ import com.beour.reservation.guest.dto.CheckAvailableTimesRequestDto;
 import com.beour.reservation.guest.dto.ReservationCreateRequest;
 import com.beour.reservation.guest.dto.ReservationListResponseDto;
 import com.beour.reservation.guest.dto.ReservationResponseDto;
+import com.beour.review.domain.entity.Review;
+import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.space.domain.entity.AvailableTime;
 import com.beour.space.domain.entity.Space;
 import com.beour.space.domain.repository.SpaceRepository;
@@ -21,6 +23,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +35,7 @@ public class ReservationGuestService {
     private final UserRepository userRepository;
     private final SpaceRepository spaceRepository;
     private final CheckAvailableTimeService checkAvailableTimeService;
+    private final ReviewRepository reviewRepository;
 
     public ReservationResponseDto createReservation(ReservationCreateRequest requestDto) {
         User guest = getUser(requestDto.getGuestId());
@@ -114,15 +118,25 @@ public class ReservationGuestService {
         return responseDtoList;
     }
 
-    public List<ReservationListResponseDto> findPastReservationList(Long guestId) {
+    @Transactional
+    public List<ReservationListResponseDto> findPastReservationList() {
+        User user = findUserFromToken();
         List<Reservation> reservationList = reservationRepository.findPastReservationsByGuest(
-            guestId, LocalDate.now(), LocalTime.now());
+            user.getId(), LocalDate.now(), LocalTime.now());
 
         checkEmptyReservation(reservationList);
 
         List<ReservationListResponseDto> responseDtoList = new ArrayList<>();
         for (Reservation reservation : reservationList) {
-            responseDtoList.add(ReservationListResponseDto.of(reservation));
+            if(reservation.getStatus() == ReservationStatus.ACCEPTED){
+                reservation.updateStatus(ReservationStatus.COMPLETED);
+            }
+            Review review = reviewRepository.findByGuestIdAndSpaceIdAndReservedDateAndDeletedAtIsNull(user.getId(), reservation.getSpace().getId(), reservation.getDate()).orElse(null);
+            Long reviewId = 0L;
+            if(review != null){
+                reviewId = review.getId();
+            }
+            responseDtoList.add(ReservationListResponseDto.of(reservation, reviewId));
         }
 
         return responseDtoList;
@@ -145,5 +159,13 @@ public class ReservationGuestService {
         }
 
         reservation.cancel();
+    }
+
+    private User findUserFromToken() {
+        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        return userRepository.findByLoginIdAndDeletedAtIsNull(loginId).orElseThrow(
+            () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다.")
+        );
     }
 }

@@ -21,10 +21,11 @@ public class ReservationListResponseDto {
     private int price;
     private int guestCount;
     private ReservationStatus status;
+    private Long reviewId;
 
     @Builder
     private ReservationListResponseDto(Long reservationId, String spaceName, String spaceThumbImageUrl, LocalDate date, LocalTime startTime, LocalTime endTime,
-        int price, int guestCount, ReservationStatus status){
+        int price, int guestCount, ReservationStatus status, Long reviewId){
         this.reservationId = reservationId;
         this.spaceName = spaceName;
         this.spaceThumbImageUrl = spaceThumbImageUrl;
@@ -34,6 +35,7 @@ public class ReservationListResponseDto {
         this.price = price;
         this.guestCount = guestCount;
         this.status = status;
+        this.reviewId = reviewId;
     }
 
     public static ReservationListResponseDto of(Reservation reservation){
@@ -47,6 +49,21 @@ public class ReservationListResponseDto {
             .price(reservation.getPrice())
             .guestCount(reservation.getGuestCount())
             .status(reservation.isDeleted() ? ReservationStatus.REJECTED : reservation.getStatus())
+            .build();
+    }
+
+    public static ReservationListResponseDto of(Reservation reservation, Long reviewId){
+        return ReservationListResponseDto.builder()
+            .reservationId(reservation.getId())
+            .spaceName(reservation.getSpace().getName())
+            .spaceThumbImageUrl(reservation.getSpace().getThumbnailUrl())
+            .date(reservation.getDate())
+            .startTime(reservation.getStartTime())
+            .endTime(reservation.getEndTime())
+            .price(reservation.getPrice())
+            .guestCount(reservation.getGuestCount())
+            .status(reservation.isDeleted() ? ReservationStatus.REJECTED : reservation.getStatus())
+            .reviewId(reviewId)
             .build();
     }
 

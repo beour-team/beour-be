@@ -54,6 +54,10 @@ public class Reservation extends BaseTimeEntity {
         this.softDelete();
     }
 
+    public void updateStatus(ReservationStatus status){
+        this.status = status;
+    }
+
     @Builder
     private Reservation(User guest, User host, Space space, ReservationStatus status, LocalDate date, LocalTime startTime, LocalTime endTime, int price, int guestCount){
         this.guest = guest;
