@@ -57,7 +57,7 @@ public class SpaceController {
         return ApiResponse.ok("공간이 성공적으로 수정되었습니다.");
     }
 
-    @PatchMapping("/api/spaces/{id}/basic")
+/*    @PatchMapping("/api/spaces/{id}/basic")
     public ApiResponse<String> updateSpaceBasic(@PathVariable(value = "id") Long id,
                                                 @Valid @RequestBody SpaceUpdateRequestDto dto) {
         spaceService.updateSpaceBasic(id, dto);
@@ -83,7 +83,7 @@ public class SpaceController {
                                                  @Valid @RequestBody SpaceUpdateRequestDto dto) {
         spaceService.updateSpaceImages(id, dto);
         return ApiResponse.ok("공간 이미지가 성공적으로 수정되었습니다.");
-    }
+    }*/
 
     @DeleteMapping("/api/spaces/{id}")
     public ApiResponse<String> deleteSpace(@PathVariable(value = "id") Long id) {

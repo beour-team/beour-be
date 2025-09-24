@@ -25,6 +25,7 @@ public class ReviewCommentResponseDto {
     private LocalDate reservationDate;
     private String reviewContent;
     private List<String> reviewImages;
+    private Long reviewCommentId;
     private String hostNickname;
     private LocalDateTime reviewCommentCreatedAt;
     private String reviewCommentContent;
@@ -40,6 +41,7 @@ public class ReviewCommentResponseDto {
                 .reviewImages(review.getImages().stream()
                         .map(reviewImage -> reviewImage.getImageUrl())
                         .collect(Collectors.toList()))
+                .reviewCommentId(reviewComment.getId())
                 .hostNickname(reviewComment.getUser().getNickname())
                 .reviewCommentCreatedAt(reviewComment.getCreatedAt())
                 .reviewCommentContent(reviewComment.getContent())

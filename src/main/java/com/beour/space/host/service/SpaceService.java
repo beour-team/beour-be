@@ -8,6 +8,8 @@ import com.beour.global.exception.exceptionType.UserNotFoundException;
 import com.beour.global.file.ImageUploader;
 import com.beour.review.domain.repository.ReviewRepository;
 import com.beour.space.domain.entity.*;
+import com.beour.space.domain.enums.SpaceCategory;
+import com.beour.space.domain.enums.UseCategory;
 import com.beour.space.domain.repository.*;
 import com.beour.space.host.dto.*;
 import com.beour.user.entity.User;
@@ -53,8 +55,8 @@ public class SpaceService {
         Space space = Space.builder()
                 .host(host)
                 .name(dto.getName())
-                .spaceCategory(dto.getSpaceCategory())
-                .useCategory(dto.getUseCategory())
+                .spaceCategory(SpaceCategory.fromDisplayName(dto.getSpaceCategory()))
+                .useCategory(UseCategory.fromDisplayName(dto.getUseCategory()))
                 .maxCapacity(dto.getMaxCapacity())
                 .address(dto.getAddress())
                 .detailAddress(dto.getDetailAddress())
@@ -200,7 +202,7 @@ public class SpaceService {
         // 1. Space 수정
         space.update(
                 dto.getName(), dto.getAddress(), dto.getDetailAddress(), dto.getPricePerHour(),
-                dto.getMaxCapacity(), dto.getSpaceCategory(), dto.getUseCategory(),
+                dto.getMaxCapacity(), SpaceCategory.fromDisplayName(dto.getSpaceCategory()), UseCategory.fromDisplayName(dto.getUseCategory()),
                 thumbnailUrl, latitudeAndLongitude[0], latitudeAndLongitude[1]
         );
 
@@ -245,7 +247,7 @@ public class SpaceService {
         }
     }
 
-    @Transactional
+/*    @Transactional
     public void updateSpaceBasic(Long id, SpaceUpdateRequestDto dto) {
         Space space = findSpaceByIdAndCheckOwnership(id);
 
@@ -296,7 +298,7 @@ public class SpaceService {
         Space space = findSpaceByIdAndCheckOwnership(id);
         // 이 메서드는 이제 multipart file 업로드 방식으로 대체되었으므로
         // 필요에 따라 제거하거나 다른 용도로 사용할 수 있습니다.
-    }
+    }*/
 
     @Transactional
     public void deleteSpace(Long spaceId) {
