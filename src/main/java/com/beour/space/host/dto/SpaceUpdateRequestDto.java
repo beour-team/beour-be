@@ -16,10 +16,10 @@ public class SpaceUpdateRequestDto {
     private String name;
 
     @NotNull(message = "공간 유형은 필수입니다.")
-    private SpaceCategory spaceCategory;
+    private String spaceCategory;
 
     @NotNull(message = "사용 용도는 필수입니다.")
-    private UseCategory useCategory;
+    private String useCategory;
 
     @Min(1)
     private int maxCapacity;
